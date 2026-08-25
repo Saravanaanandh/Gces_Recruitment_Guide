@@ -1,0 +1,713 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   GLOBAL RESET & THEME
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #080810;
+  color: #e2e8f0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #080810;
+  overflow: hidden;
+}
+
+/* ── 3D Mode: transparent backgrounds ──────────────────────── */
+.app-layout.three-mode {
+  background: transparent;
+}
+
+.app-layout.three-mode .flipbook-container {
+  background: transparent;
+}
+
+/* ============================================================
+   3D SCENE CANVAS
+   ============================================================ */
+.scene-canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.scene-canvas-container canvas {
+  display: block;
+}
+
+/* ============================================================
+   CINEMATIC OVERLAY (Floating book mode)
+   ============================================================ */
+.cinematic-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 80px;
+  pointer-events: none;
+  animation: cinematicFadeIn 1.5s ease-out;
+}
+
+@keyframes cinematicFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cinematic-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: promptFloat 3s ease-in-out infinite;
+}
+
+@keyframes promptFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.cinematic-prompt-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.4));
+}
+
+.cinematic-prompt-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(200, 220, 255, 0.85);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
+}
+
+.cinematic-prompt-hint {
+  font-size: 12px;
+  color: rgba(150, 170, 200, 0.5);
+  letter-spacing: 0.3px;
+}
+
+/* ============================================================
+   READING OVERLAY (Flipbook on 3D canvas)
+   ============================================================ */
+.reading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  animation: readingFadeIn 0.8s ease-out;
+}
+
+@keyframes readingFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   EXPLORE DEV ROOM BUTTON
+   ============================================================ */
+.back-to-3d-btn {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  background: rgba(0, 180, 255, 0.12);
+  border: 1px solid rgba(0, 180, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(0, 220, 255, 0.95);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.back-to-3d-btn:hover {
+  background: rgba(0, 180, 255, 0.25);
+  border-color: rgba(0, 210, 255, 0.6);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(0, 180, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.back-to-3d-btn:active {
+  transform: scale(0.96);
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.flipbook-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background-color: rgba(14, 15, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.top-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.top-icon-btn:hover,
+.top-icon-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.top-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.top-search-input {
+  width: 180px;
+  height: 28px;
+  background: rgba(30, 32, 40, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 0 28px 0 10px;
+  color: #f3f4f6;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.top-search-input:focus {
+  width: 220px;
+  background: rgba(40, 42, 50, 0.9);
+  border-color: #6366f1;
+}
+
+.top-search-input::placeholder {
+  color: #6b7280;
+}
+
+.top-search-icon-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.top-search-icon-btn:hover {
+  color: #ffffff;
+}
+
+/* ============================================================
+   TOAST NOTIFICATION BANNER
+   ============================================================ */
+.toast-notification {
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 12, 18, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f3f4f6;
+  border: 1px solid rgba(0, 180, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 150, 255, 0.1);
+  z-index: 200;
+  animation: toastFadeIn 0.25s ease-out;
+  pointer-events: none;
+}
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ============================================================
+   FLIPBOOK MAIN VIEWPORT
+   ============================================================ */
+.flipbook-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 44px;
+  margin-bottom: 44px;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Side Navigation Arrows */
+.side-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  z-index: 50;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.side-nav-arrow:hover {
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-50%) scale(1.1);
+  filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.4));
+}
+
+.side-nav-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.side-nav-left {
+  left: 12px;
+}
+
+.side-nav-right {
+  right: 12px;
+}
+
+/* Book Stage */
+.flipbook-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.75)) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+}
+
+/* Spine crease dark backing behind the two pages to eliminate any white subpixel gap */
+.spine-crease-backing {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  background: #0a0a10;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Center Red Page Badge matching Image 2 */
+.book-center-badge {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c5222f;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+  z-index: 25;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   PAGE STYLING & EMBEDDED INNER SPINE SHADOW
+   ============================================================ */
+.page {
+  background-color: #0a0a10;
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+}
+
+.page:active {
+  cursor: grabbing;
+}
+
+.page img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* Left Page: inner right edge has inset dark gray shadow */
+.page--left {
+  box-shadow: inset -5px 0 12px rgba(0, 0, 0, 0.45);
+}
+
+/* Right Page: inner left edge has inset dark gray shadow */
+.page--right {
+  box-shadow: inset 5px 0 12px rgba(0, 0, 0, 0.45);
+}
+
+/* Hard cover pages */
+.page--hard {
+  background: #0a0a10;
+}
+
+/* Center Spine Blur Shadow (Embedded inside each page) */
+.page-spine-shadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Left Page: spine blur shadow on the right inner edge extending seamlessly across the seam */
+.page-spine-shadow--left {
+  right: -2px;
+  background: linear-gradient(
+    to left,
+    rgba(15, 15, 20, 0.65) 0%,
+    rgba(20, 20, 26, 0.45) 8%,
+    rgba(30, 30, 38, 0.26) 24%,
+    rgba(40, 40, 50, 0.09) 55%,
+    transparent 100%
+  );
+}
+
+/* Right Page: spine blur shadow on the left inner edge extending seamlessly across the seam */
+.page-spine-shadow--right {
+  left: -2px;
+  background: linear-gradient(
+    to right,
+    rgba(15, 15, 20, 0.65) 0%,
+    rgba(20, 20, 26, 0.45) 8%,
+    rgba(30, 30, 38, 0.26) 24%,
+    rgba(40, 40, 50, 0.09) 55%,
+    transparent 100%
+  );
+}
+
+/* ============================================================
+   BOTTOM CONTROL BAR
+   ============================================================ */
+.flipbook-bottombar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background-color: rgba(14, 15, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.bottombar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bar-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.bar-icon-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.bar-nav-arrow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bar-nav-arrow-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.bar-page-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 4px;
+}
+
+.bar-page-input {
+  width: 78px;
+  height: 26px;
+  background: rgba(30, 32, 40, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.bar-page-input:focus {
+  border-color: #6366f1;
+  background: rgba(40, 42, 50, 0.9);
+}
+
+/* ============================================================
+   THUMBNAILS DRAWER
+   ============================================================ */
+.thumbnails-drawer {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  bottom: 44px;
+  width: 260px;
+  background: rgba(14, 16, 22, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
+  animation: slideInLeft 0.2s ease-out;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.thumbnails-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.thumbnails-close-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.thumbnails-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.thumbnails-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.thumbnail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.thumbnail-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.thumbnail-item.active {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.thumbnail-img-wrap {
+  width: 100%;
+  aspect-ratio: 0.707;
+  background: #ffffff;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.thumbnail-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail-num {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.thumbnail-item.active .thumbnail-num {
+  color: #818cf8;
+  font-weight: 600;
+}
+
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #080810;
+  z-index: 1000;
+}
+
+.loading-ring {
+  width: 56px;
+  height: 56px;
+  border: 2px solid rgba(0, 180, 255, 0.1);
+  border-top: 2px solid rgba(0, 200, 255, 0.8);
+  border-radius: 50%;
+  animation: loadingSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  box-shadow: 0 0 20px rgba(0, 180, 255, 0.15);
+}
+
+@keyframes loadingSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(150, 170, 200, 0.7);
+  letter-spacing: 0.5px;
+}
+
+.loading-progress {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(0, 200, 255, 0.6);
+  font-weight: 500;
+}
+
+/* ============================================================
+   STPAGEFLIP PERSPECTIVE PRESERVATION
+   ============================================================ */
+.stf__parent {
+  perspective: 2500px !important;
+}
+
+.stf__block {
+  perspective: 2500px;
+}
+
+.flipbook {
+  cursor: grab;
+}
+
+.flipbook:active {
+  cursor: grabbing;
+}
