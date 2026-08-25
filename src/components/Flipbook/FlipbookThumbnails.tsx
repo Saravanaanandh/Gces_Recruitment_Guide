@@ -43,10 +43,7 @@ const FlipbookThumbnails: React.FC<FlipbookThumbnailsProps> = ({
 
       <div className="thumbnails-grid">
         {pageImages.map((imgUrl, idx) => {
-          const isActive =
-            idx === currentPage ||
-            (currentPage % 2 !== 0 && idx === currentPage + 1) ||
-            (currentPage % 2 === 0 && idx === currentPage - 1);
+          const isActive = idx === currentPage;
 
           return (
             <button

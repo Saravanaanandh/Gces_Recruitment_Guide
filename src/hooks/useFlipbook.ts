@@ -24,6 +24,7 @@ export interface FlipbookState {
   autoPlay: boolean;
   thumbnailsOpen: boolean;
   searchQuery: string;
+  isMobile: boolean;
 }
 
 export interface FlipbookActions {
@@ -36,6 +37,7 @@ export interface FlipbookActions {
   zoomIn: () => void;
   zoomOut: () => void;
   resetZoom: () => void;
+  setZoom: (zoom: number) => void;
   toggleFullscreen: () => void;
   toggleSound: () => void;
   toggleAutoPlay: () => void;
@@ -51,7 +53,7 @@ const PDF_URL = '/brochure.pdf';
 const FRONT_COVER_URL = '/front_cover.png';
 const BACK_COVER_URL = '/back_cover.png';
 const COVER_PAGE_URL = '/cover_page.png';
-const ZOOM_LEVELS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+const ZOOM_LEVELS = [0.8, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
 const DEFAULT_ZOOM_INDEX = 1;
 
 /**
@@ -169,10 +171,13 @@ export function useFlipbook(): [FlipbookState, FlipbookActions] {
   const [thumbnailsOpen, setThumbnailsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const flipbookRef = useRef<any>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const prevPageRef = useRef(0);
+  const allPagesRef = useRef<{ desktop: string[]; mobile: string[] } | null>(null);
 
   const showToast = useCallback((msg: string) => {
     if (toastTimeoutRef.current) {
@@ -182,6 +187,28 @@ export function useFlipbook(): [FlipbookState, FlipbookActions] {
     toastTimeoutRef.current = window.setTimeout(() => {
       setToastMessage(null);
     }, 2200);
+  }, []);
+
+  // ── Responsive Page Layout Switcher ───────────────────────────────────────
+  useEffect(() => {
+    const handleResize = () => {
+      const isMob = window.innerWidth < 640;
+      setIsMobile(isMob);
+      if (allPagesRef.current) {
+        const targetPages = isMob ? allPagesRef.current.mobile : allPagesRef.current.desktop;
+        setPageImages((prev) => {
+          if (prev.length !== targetPages.length) {
+            setTotalPages(targetPages.length);
+            setCurrentPage((curr) => Math.min(curr, targetPages.length - 1));
+            return targetPages;
+          }
+          return prev;
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // ── PDF Loading, A3→A4 Splitting, & Cover Insertion ────────────────────────
@@ -234,30 +261,52 @@ export function useFlipbook(): [FlipbookState, FlipbookActions] {
         const backCoverDataUrl = await loadImageAsDataUrl(BACK_COVER_URL, a4PixelWidth, a4PixelHeight);
         if (cancelled) return;
 
-        // ── Step 4: Assemble final page order ──
+        // ── Step 4: Assemble separate Desktop vs Mobile page orders ──
         //
-        // 1. Outside Front Cover (Hard cover)  → front_cover.png
-        // 2. Inside Front Cover back (Left)     → Blank page
-        // 3. Cover page (Right)                 → cover_page.png
-        // 4. ... Interior PDF Pages             → a4Images
-        // 5. Last interior spread (Left)        → Thank You (bold italic centered)
-        // 6. Last interior spread (Right)       → Blank page
-        // 7. Outside Back Cover (Hard cover)    → back_cover.png
+        // Desktop (2-page spread book):
+        // 1. Outside Front Cover
+        // 2. Inside Front Cover back (Blank)
+        // 3. Cover page (cover_page.png)
+        // 4. ... Interior PDF Pages
+        // 5. Last interior spread: Thank You
+        // 6. Inside Back Cover (Blank)
+        // 7. Outside Back Cover
         //
-        const finalPages: string[] = [
-          frontCoverDataUrl, // Page 1: Outside Front Cover
-          blankPageDataUrl,  // Page 2: Inside Front Cover Back (Blank)
-          coverPageDataUrl,  // Page 3: Existing cover_page.png
-          ...a4Images,       // Pages 4 to 4 + a4Images.length - 1: PDF interior spreads
-          thankYouDataUrl,   // Page totalPages - 1: Left side Thank You
-          blankPageDataUrl,  // Page totalPages: Right side Blank
-          backCoverDataUrl,  // Page totalPages + 1: Outside Back Cover
+        const desktopPages: string[] = [
+          frontCoverDataUrl,
+          blankPageDataUrl,
+          coverPageDataUrl,
+          ...a4Images,
+          thankYouDataUrl,
+          blankPageDataUrl,
+          backCoverDataUrl,
         ];
+
+        // Mobile (Single page mode - NO filler blank pages):
+        // 1. Outside Front Cover
+        // 2. Cover page (cover_page.png directly after Front Cover)
+        // 3. ... Interior PDF Pages
+        // 4. Thank You
+        // 5. Outside Back Cover (directly after Thank You)
+        //
+        const mobilePages: string[] = [
+          frontCoverDataUrl,
+          coverPageDataUrl,
+          ...a4Images,
+          thankYouDataUrl,
+          backCoverDataUrl,
+        ];
+
+        allPagesRef.current = { desktop: desktopPages, mobile: mobilePages };
 
         if (cancelled) return;
 
-        setPageImages(finalPages);
-        setTotalPages(finalPages.length);
+        const isMob = window.innerWidth < 640;
+        setIsMobile(isMob);
+        const initialPages = isMob ? mobilePages : desktopPages;
+
+        setPageImages(initialPages);
+        setTotalPages(initialPages.length);
         setStatus('ready');
       } catch (err) {
         if (cancelled) return;
@@ -419,6 +468,20 @@ export function useFlipbook(): [FlipbookState, FlipbookActions] {
     setZoomIndex(DEFAULT_ZOOM_INDEX);
   }, []);
 
+  const setZoom = useCallback((targetZoom: number) => {
+    // Find closest zoom level index
+    let closestIdx = 0;
+    let minDiff = Infinity;
+    ZOOM_LEVELS.forEach((lvl, idx) => {
+      const diff = Math.abs(lvl - targetZoom);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIdx = idx;
+      }
+    });
+    setZoomIndex(closestIdx);
+  }, []);
+
   const toggleSound = useCallback(() => {
     setSoundEnabled((prev) => !prev);
   }, []);
@@ -446,6 +509,7 @@ export function useFlipbook(): [FlipbookState, FlipbookActions] {
     autoPlay,
     thumbnailsOpen,
     searchQuery,
+    isMobile,
   };
 
   const actions: FlipbookActions = {
@@ -458,6 +522,7 @@ export function useFlipbook(): [FlipbookState, FlipbookActions] {
     zoomIn,
     zoomOut,
     resetZoom,
+    setZoom,
     toggleFullscreen,
     toggleSound,
     toggleAutoPlay,

@@ -43,6 +43,9 @@ const PdfPage = React.forwardRef<HTMLDivElement, PdfPageProps>(
             aria-hidden="true"
           />
         )}
+
+        {/* Backside overlay layer for mobile view page turning */}
+        <div className="page-backside-layer" aria-hidden="true" />
       </div>
     );
   }

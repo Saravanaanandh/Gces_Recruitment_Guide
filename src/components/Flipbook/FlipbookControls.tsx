@@ -129,6 +129,7 @@ interface FlipbookControlsProps {
   isFullscreen: boolean;
   soundEnabled: boolean;
   autoPlay: boolean;
+  isMobile?: boolean;
   onFlipPrev: () => void;
   onFlipNext: () => void;
   onGoToFirstPage: () => void;
@@ -136,6 +137,7 @@ interface FlipbookControlsProps {
   onGoToPage: (pageNum: number) => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onResetZoom?: () => void;
   onToggleFullscreen: () => void;
   onToggleSound: () => void;
   onToggleAutoPlay: () => void;
@@ -150,6 +152,7 @@ const FlipbookControls: React.FC<FlipbookControlsProps> = ({
   isFullscreen,
   soundEnabled,
   autoPlay,
+  isMobile = false,
   onFlipPrev,
   onFlipNext,
   onGoToFirstPage,
@@ -157,24 +160,29 @@ const FlipbookControls: React.FC<FlipbookControlsProps> = ({
   onGoToPage,
   onZoomIn,
   onZoomOut,
+  onResetZoom,
   onToggleFullscreen,
   onToggleSound,
   onToggleAutoPlay,
   onToggleThumbnails,
   onShare,
 }) => {
-  // Compute display spread label matching video format: e.g. "1-2/58", "3-4/58", "5-6/58"
+  // Compute display spread label matching video format on desktop, single page on mobile
   let pageDisplay = '1';
-  if (currentPage === 0) {
-    pageDisplay = `1-2/${totalPages}`;
-  } else if (currentPage % 2 !== 0) {
-    const p1 = currentPage + 1;
-    const p2 = Math.min(p1 + 1, totalPages);
-    pageDisplay = `${p1}-${p2}/${totalPages}`;
+  if (isMobile) {
+    pageDisplay = `${currentPage + 1}/${totalPages}`;
   } else {
-    const p1 = currentPage;
-    const p2 = Math.min(p1 + 1, totalPages);
-    pageDisplay = `${p1}-${p2}/${totalPages}`;
+    if (currentPage === 0) {
+      pageDisplay = `1-2/${totalPages}`;
+    } else if (currentPage % 2 !== 0) {
+      const p1 = currentPage + 1;
+      const p2 = Math.min(p1 + 1, totalPages);
+      pageDisplay = `${p1}-${p2}/${totalPages}`;
+    } else {
+      const p1 = currentPage;
+      const p2 = Math.min(p1 + 1, totalPages);
+      pageDisplay = `${p1}-${p2}/${totalPages}`;
+    }
   }
 
   const [inputVal, setInputVal] = useState(pageDisplay);
@@ -215,6 +223,8 @@ const FlipbookControls: React.FC<FlipbookControlsProps> = ({
     link.click();
     document.body.removeChild(link);
   };
+
+  const zoomPercent = Math.round(zoom * 100);
 
   return (
     <footer className="flipbook-bottombar" role="toolbar" aria-label="Viewer controls">
@@ -284,7 +294,7 @@ const FlipbookControls: React.FC<FlipbookControlsProps> = ({
             onChange={(e) => setInputVal(e.target.value)}
             onKeyDown={handleKeyDown}
             title="Type a page number and press Enter"
-            aria-label="Current page spread and total pages"
+            aria-label="Current page and total pages"
           />
         </div>
 
@@ -309,8 +319,41 @@ const FlipbookControls: React.FC<FlipbookControlsProps> = ({
         </button>
       </div>
 
-      {/* Right controls group */}
+      {/* Right controls group (Zoom + Share + Download + Fullscreen) */}
       <div className="bottombar-group bottombar-right">
+        {/* Zoom In / Out / Reset Controls */}
+        <div className="bar-zoom-group">
+          <button
+            type="button"
+            className="bar-icon-btn"
+            onClick={onZoomOut}
+            title="Zoom Out (-)"
+            aria-label="Zoom out"
+          >
+            <ZoomOutIcon />
+          </button>
+
+          <button
+            type="button"
+            className="bar-zoom-label-btn"
+            onClick={onResetZoom}
+            title="Reset Zoom (100%)"
+            aria-label="Reset zoom"
+          >
+            {zoomPercent}%
+          </button>
+
+          <button
+            type="button"
+            className="bar-icon-btn"
+            onClick={onZoomIn}
+            title="Zoom In (+)"
+            aria-label="Zoom in"
+          >
+            <ZoomInIcon />
+          </button>
+        </div>
+
         <button
           type="button"
           className="bar-icon-btn"

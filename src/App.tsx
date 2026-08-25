@@ -28,6 +28,7 @@ const App: React.FC = () => {
     soundEnabled,
     autoPlay,
     thumbnailsOpen,
+    isMobile,
   } = state;
 
   const {
@@ -39,6 +40,8 @@ const App: React.FC = () => {
     handlePageChange: originalHandlePageChange,
     zoomIn,
     zoomOut,
+    resetZoom,
+    setZoom,
     toggleFullscreen,
     toggleSound,
     toggleAutoPlay,
@@ -168,6 +171,10 @@ const App: React.FC = () => {
             onPageChange={handlePageChange}
             onFlipPrev={flipPrev}
             onFlipNext={flipNext}
+            onZoomIn={zoomIn}
+            onZoomOut={zoomOut}
+            onResetZoom={resetZoom}
+            onSetZoom={setZoom}
             flipbookRef={flipbookRef}
           />
 
@@ -179,6 +186,7 @@ const App: React.FC = () => {
             isFullscreen={isFullscreen}
             soundEnabled={soundEnabled}
             autoPlay={autoPlay}
+            isMobile={isMobile}
             onFlipPrev={flipPrev}
             onFlipNext={flipNext}
             onGoToFirstPage={goToFirstPage}
@@ -186,6 +194,7 @@ const App: React.FC = () => {
             onGoToPage={goToPage}
             onZoomIn={zoomIn}
             onZoomOut={zoomOut}
+            onResetZoom={resetZoom}
             onToggleFullscreen={toggleFullscreen}
             onToggleSound={toggleSound}
             onToggleAutoPlay={toggleAutoPlay}
