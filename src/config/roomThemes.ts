@@ -413,9 +413,9 @@ export function applyThemeToScene(scene: THREE.Object3D, theme: RoomTheme): void
         p = FIXED_TV_STYLE;
       }
 
-      // TV screen backing plate: pure neutral dark with no emissive
+      // TV screen material: skip netflux because video texture is mounted here!
       if (matName === 'netflux') {
-        p = { color: '#050505', roughness: 0.8 };
+        return;
       }
 
       // TV background pillar (Nero meshes: Box001, Box002, Box004, Box005) matches wall theme

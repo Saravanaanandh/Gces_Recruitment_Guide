@@ -148,6 +148,15 @@ const App: React.FC = () => {
         themeId={roomTheme}
       />
 
+      {/* ── Top Left Title Bar / Brand Logo ──────────────────────── */}
+      <div className="webpage-title-bar">
+        <img src="/logo.jfif" alt="Logo" className="title-bar-logo" />
+        <div className="title-bar-text">
+          <span className="title-bar-name">GCES - CSE</span>
+          <span className="title-bar-tagline">Recruitment Guide</span>
+        </div>
+      </div>
+
       {/* Room Color Theme Switcher Option */}
       <ThemeSwitcher
         currentThemeId={roomTheme}

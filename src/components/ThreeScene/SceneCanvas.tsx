@@ -10,6 +10,7 @@ import PostProcessingEffects from './PostProcessingEffects';
 import TransparentDisplay from './TransparentDisplay';
 import TVDisplay from './TVDisplay';
 import BelowTVClock from './BelowTVClock';
+import StudentModalOverlay from './StudentModalOverlay';
 
 interface SceneCanvasProps {
   mode: 'cinematic' | 'reading';
@@ -93,6 +94,22 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
   // Day/Night Mode State Toggle
   const [isDayMode, setIsDayMode] = useState<boolean>(false);
 
+  // Expanded Student Modal Index (Rendered in pure HTML DOM outside Canvas)
+  const [modalStudentIndex, setModalStudentIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const onOpenModal = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && typeof detail.index === 'number') {
+        setModalStudentIndex(detail.index);
+      } else {
+        setModalStudentIndex(0);
+      }
+    };
+    window.addEventListener('open-student-hud-modal', onOpenModal);
+    return () => window.removeEventListener('open-student-hud-modal', onOpenModal);
+  }, []);
+
   return (
     <div
       className="scene-canvas-container"
@@ -139,7 +156,7 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
         {/* ── Dynamic Holographic Transparent Display on the Empty Wall ── */}
         {mode === 'cinematic' && (
           <Suspense fallback={null}>
-            <TransparentDisplay />
+            <TransparentDisplay onExpand={(idx) => setModalStudentIndex(idx)} />
           </Suspense>
         )}
 
@@ -188,6 +205,14 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
         {/* ── Post-processing ────────────────────────────────────────── */}
         <PostProcessingEffects deviceTier={deviceTier} />
       </Canvas>
+
+      {/* ── EXPANDED FULLSCREEN MODAL OVERLAY (Pure React DOM outside Canvas) ── */}
+      {modalStudentIndex !== null && (
+        <StudentModalOverlay
+          initialIndex={modalStudentIndex}
+          onClose={() => setModalStudentIndex(null)}
+        />
+      )}
     </div>
   );
 };

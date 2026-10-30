@@ -1,25 +1,13 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import * as THREE from 'three';
-import { Html, useVideoTexture } from '@react-three/drei';
+import React, { useState, useEffect } from 'react';
+import { Html } from '@react-three/drei';
+import { getTvVideo } from './tvVideoManager';
 
 interface TVDisplayProps {
   videoSrc?: string;
 }
 
-interface TVScreenContentProps {
-  videoSrc: string;
-}
-
-const TVScreenContent: React.FC<TVScreenContentProps> = ({ videoSrc }) => {
-  const texture = useVideoTexture(videoSrc, {
-    muted: true,
-    loop: true,
-    start: true,
-    playsInline: true,
-    crossOrigin: 'anonymous',
-  });
-
-  const video = texture.image as HTMLVideoElement;
+const TVDisplay: React.FC<TVDisplayProps> = () => {
+  const { video } = getTvVideo();
 
   const [isPlaying, setIsPlaying] = useState<boolean>(!video.paused);
   const [isMuted, setIsMuted] = useState<boolean>(video.muted);
@@ -60,27 +48,11 @@ const TVScreenContent: React.FC<TVScreenContentProps> = ({ videoSrc }) => {
       setDurationStr(formatTime(video.duration));
     }
 
-    // Try playing if paused
-    if (video.paused) {
-      video.play().catch(() => {});
-    }
-
-    // Unblock on any first user interaction if browser autoplay deferred
-    const unlockAutoplay = () => {
-      if (video.paused) {
-        video.play().catch(() => {});
-      }
-    };
-    window.addEventListener('pointerdown', unlockAutoplay, { once: true });
-    window.addEventListener('keydown', unlockAutoplay, { once: true });
-
     return () => {
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
       video.removeEventListener('volumechange', onVolumeChange);
       video.removeEventListener('timeupdate', onTimeUpdate);
-      window.removeEventListener('pointerdown', unlockAutoplay);
-      window.removeEventListener('keydown', unlockAutoplay);
     };
   }, [video]);
 
@@ -109,27 +81,23 @@ const TVScreenContent: React.FC<TVScreenContentProps> = ({ videoSrc }) => {
 
   return (
     <group>
-      {/* ── TV Video Plane Mesh ── */}
+      {/* ── Invisible click plane over the TV screen to toggle Play/Pause on click ── */}
       <mesh
-        position={[-0.0308, -0.1161, -2.180]}
-        renderOrder={10}
+        position={[-0.0308, -0.1161, -2.170]}
         onClick={(e) => {
           e.stopPropagation();
           togglePlay();
         }}
       >
         <planeGeometry args={[1.108, 0.644]} />
-        <meshBasicMaterial
-          map={texture}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       {/* ── TV OSD Controls Bar Overlay (mounted at bottom of TV screen) ── */}
       <Html
         transform
         distanceFactor={0.65}
-        position={[-0.0308, -0.370, -2.176]}
+        position={[-0.0308, -0.370, -2.165]}
         zIndexRange={[30, 60]}
         style={{ pointerEvents: 'auto' }}
       >
@@ -183,23 +151,6 @@ const TVScreenContent: React.FC<TVScreenContentProps> = ({ videoSrc }) => {
         </div>
       </Html>
     </group>
-  );
-};
-
-const TVPlaceholder: React.FC = () => {
-  return (
-    <mesh position={[-0.0308, -0.1161, -2.180]}>
-      <planeGeometry args={[1.108, 0.644]} />
-      <meshBasicMaterial color="#0A0A0A" />
-    </mesh>
-  );
-};
-
-const TVDisplay: React.FC<TVDisplayProps> = ({ videoSrc = '/TV_content.mp4' }) => {
-  return (
-    <Suspense fallback={<TVPlaceholder />}>
-      <TVScreenContent videoSrc={videoSrc} />
-    </Suspense>
   );
 };
 

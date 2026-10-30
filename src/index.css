@@ -1301,3 +1301,69 @@ div[data-backside="true"] .page-backside-layer {
   color: #e2e8f0;
 }
 
+/* ============================================================
+   WEBPAGE TOP TITLE BAR
+   ============================================================ */
+.webpage-title-bar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 8px;
+  background: rgba(14, 16, 22, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 30px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(255, 122, 26, 0.15);
+  user-select: none;
+  pointer-events: auto;
+  transition: all 0.25s ease;
+}
+
+.webpage-title-bar:hover {
+  background: rgba(18, 22, 32, 0.9);
+  border-color: rgba(255, 122, 26, 0.45);
+  box-shadow:
+    0 6px 25px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 122, 26, 0.3);
+  transform: translateY(-1px);
+}
+
+.title-bar-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(255, 122, 26, 0.45);
+  border: 1.5px solid rgba(255, 122, 26, 0.5);
+  flex-shrink: 0;
+}
+
+.title-bar-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.title-bar-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.title-bar-tagline {
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+}
+
+

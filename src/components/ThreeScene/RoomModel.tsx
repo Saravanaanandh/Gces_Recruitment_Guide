@@ -2,6 +2,7 @@ import React, { useMemo, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { ROOM_THEMES, RoomTheme, applyThemeToScene } from '../../config/roomThemes';
+import { applyTvVideoToScene } from './tvVideoManager';
 
 interface RoomModelProps {
   deviceTier: 'desktop' | 'tablet' | 'mobile';
@@ -54,6 +55,9 @@ const RoomModel: React.FC<RoomModelProps> = ({
       }
     });
 
+    // Apply video texture directly to TV screen (mesh netflux / obj_02)
+    applyTvVideoToScene(clone);
+
     return {
       clonedScene: clone,
       centerOffset: center,
@@ -66,6 +70,7 @@ const RoomModel: React.FC<RoomModelProps> = ({
   useEffect(() => {
     if (!clonedScene) return;
     applyThemeToScene(clonedScene, currentTheme);
+    applyTvVideoToScene(clonedScene);
   }, [clonedScene, currentTheme]);
 
   return (
