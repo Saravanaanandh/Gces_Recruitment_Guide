@@ -2,20 +2,21 @@ import React, { useMemo, useState, useEffect, Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
-import DeveloperRoom from './DeveloperRoom';
-import Platform from './Platform';
+import RoomModel from './RoomModel';
 import ClosedBook from './ClosedBook';
-import ElectricalEffects from './ElectricalEffects';
 import CinematicCamera from './CinematicCamera';
 import PageTurnEffects from './PageTurnEffects';
 import PostProcessingEffects from './PostProcessingEffects';
-import { FocusTarget } from './DeveloperWorkspace';
+import TransparentDisplay from './TransparentDisplay';
+import TVDisplay from './TVDisplay';
+import BelowTVClock from './BelowTVClock';
 
 interface SceneCanvasProps {
   mode: 'cinematic' | 'reading';
   onClickBook: () => void;
   intensifyTrigger: number;
   pageTurnTrigger: number;
+  themeId?: string;
 }
 
 function useDeviceTier(): 'desktop' | 'tablet' | 'mobile' {
@@ -28,15 +29,15 @@ function useDeviceTier(): 'desktop' | 'tablet' | 'mobile' {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// // TASK 4: DYNAMIC INTERIOR LIGHTING RIG (Moodier, Dimmer Dark Mode)
+// DYNAMIC INTERIOR LIGHTING RIG (Scaled for room interior)
 // ─────────────────────────────────────────────────────────────────────────────
 const InteriorLights: React.FC<{ isDayMode: boolean }> = ({ isDayMode }) => {
   const hemiRef = useRef<THREE.HemisphereLight>(null!);
   const dirRef = useRef<THREE.DirectionalLight>(null!);
 
   useFrame(() => {
-    const targetHemi = isDayMode ? 0.85 : 0.14;
-    const targetDir = isDayMode ? 2.2 : 0.42;
+    const targetHemi = isDayMode ? 0.9 : 0.45;
+    const targetDir = isDayMode ? 1.8 : 0.85;
     if (hemiRef.current) {
       hemiRef.current.intensity = THREE.MathUtils.lerp(hemiRef.current.intensity, targetHemi, 0.05);
     }
@@ -47,35 +48,35 @@ const InteriorLights: React.FC<{ isDayMode: boolean }> = ({ isDayMode }) => {
 
   return (
     <>
-      {/* Hemisphere: warm sky, cool ground bounce */}
-      <hemisphereLight ref={hemiRef} args={['#e8d5c0', '#1a1820', 0.14]} />
+      {/* Hemisphere: warm ceiling bounce, subtle floor ground fill */}
+      <hemisphereLight ref={hemiRef} args={['#fff2e2', '#221e28', 0.45]} />
 
-      {/* Primary key light — angled down from ceiling at platform */}
+      {/* Primary key light — angled down from ceiling toward the coffee table */}
       <directionalLight
         ref={dirRef}
-        position={[0, 6, 1]}
-        color="#fff4e8"
-        intensity={0.42}
+        position={[-0.37, 0.85, 0.1]}
+        color="#fff6ec"
+        intensity={0.85}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
-        shadow-camera-near={0.5}
-        shadow-camera-far={25}
-        shadow-camera-left={-8}
-        shadow-camera-right={8}
-        shadow-camera-top={8}
-        shadow-camera-bottom={-8}
-        shadow-bias={-0.002}
+        shadow-camera-near={0.1}
+        shadow-camera-far={6}
+        shadow-camera-left={-2}
+        shadow-camera-right={2}
+        shadow-camera-top={2}
+        shadow-camera-bottom={-2}
+        shadow-bias={-0.001}
       />
 
-      {/* Right sconce fill */}
-      <pointLight position={[6.8, 1.2, -1.5]} color="#ffd4a0" intensity={isDayMode ? 1.2 : 0.45} distance={8} decay={2} />
-
-      {/* Cool back-wall bounce */}
-      <directionalLight position={[0, 3, -6]} color="#9db4d8" intensity={isDayMode ? 0.35 : 0.08} castShadow={false} />
-
-      {/* Front fill for book & platform */}
-      <pointLight position={[0, 2, 5]} color="#fff0e0" intensity={isDayMode ? 0.55 : 0.12} distance={10} decay={2} />
+      {/* Soft fill light illuminating the living room and brochure from seated eye position */}
+      <pointLight
+        position={[-0.37, 0.15, 0.55]}
+        color="#ffe8d0"
+        intensity={isDayMode ? 0.7 : 0.35}
+        distance={4.5}
+        decay={2}
+      />
     </>
   );
 };
@@ -85,25 +86,12 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
   onClickBook,
   intensifyTrigger,
   pageTurnTrigger,
+  themeId = 'warm-nordic',
 }) => {
   const deviceTier = useDeviceTier();
 
-  // Focus Target State System
-  const [focusedTarget, setFocusedTarget] = useState<FocusTarget>('none');
-
   // Day/Night Mode State Toggle
   const [isDayMode, setIsDayMode] = useState<boolean>(false);
-
-  // Listen for Escape key to exit close-up focus view
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && focusedTarget !== 'none') {
-        setFocusedTarget('none');
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedTarget]);
 
   return (
     <div
@@ -115,31 +103,9 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
         zIndex: 0,
       }}
     >
-      {/* ── TASK 3: Minimal Plain Text Exit UI (No Button/Pill Container) ── */}
-      {focusedTarget !== 'none' && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '22px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 50,
-            color: 'rgba(255, 255, 255, 0.7)',
-            fontSize: '13px',
-            fontWeight: 500,
-            letterSpacing: '0.06em',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            textShadow: '0 1px 4px rgba(0, 0, 0, 0.9)',
-          }}
-        >
-          Esc to go back
-        </div>
-      )}
-
       <Canvas
         shadows={deviceTier !== 'mobile'}
-        camera={{ fov: 50, near: 0.1, far: 100, position: [0, 0.85, 4.8] }}
+        camera={{ fov: 50, near: 0.1, far: 50, position: [0.85, 0.30, 1.15] }}
         gl={{
           antialias: deviceTier !== 'mobile',
           alpha: false,
@@ -147,41 +113,51 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
           stencil: false,
         }}
         dpr={deviceTier === 'mobile' ? 1 : Math.min(window.devicePixelRatio, 2)}
-        style={{ background: isDayMode ? '#282430' : '#1a1520' }}
-        onPointerMissed={() => {
-          if (focusedTarget !== 'none') {
-            setFocusedTarget('none');
-          }
-        }}
+        style={{ background: isDayMode ? '#282430' : '#141218' }}
       >
-        {/* ── Fog to soften room edges ───────────────────────────────── */}
-        <fog attach="fog" args={[isDayMode ? '#282430' : '#1a1520', 14, 38]} />
+        {/* ── Fog to soften room distant edges ─────────────────────────── */}
+        <fog attach="fog" args={[isDayMode ? '#282430' : '#141218', 10, 30]} />
 
-        {/* ── FIX 12: Lighting rig with Day/Night support ────────────── */}
+        {/* ── Lighting rig with Day/Night support ────────────────────── */}
         <InteriorLights isDayMode={isDayMode} />
 
-        {/* ── Camera with Smooth Focus Transitions ──────────────────── */}
+        {/* ── Camera (Constrained inside the room looking at the table) ─ */}
         <CinematicCamera
           mode={mode}
           deviceTier={deviceTier}
-          focusedTarget={focusedTarget}
         />
 
-        {/* ── FIX 5, 11, 12: Room with Gray Walls, Sofa & Light Switch ─ */}
+        {/* ── test.glb Environment Model with dynamic theme ──────────── */}
         <Suspense fallback={null}>
-          <DeveloperRoom
+          <RoomModel
             deviceTier={deviceTier}
-            focusedTarget={focusedTarget}
-            onFocusTarget={setFocusedTarget}
             isDayMode={isDayMode}
-            onToggleDayMode={() => setIsDayMode((prev) => !prev)}
+            themeId={themeId}
           />
         </Suspense>
 
-        {/* ── Circular platform / stage (Untouched) ─────────────────── */}
-        <Platform deviceTier={deviceTier} />
+        {/* ── Dynamic Holographic Transparent Display on the Empty Wall ── */}
+        {mode === 'cinematic' && (
+          <Suspense fallback={null}>
+            <TransparentDisplay />
+          </Suspense>
+        )}
 
-        {/* ── Floating closed book (Untouched) ──────────────────────── */}
+        {/* ── TV Screen Video Playback & OSD Controls ─────────────────── */}
+        {mode === 'cinematic' && (
+          <Suspense fallback={null}>
+            <TVDisplay videoSrc="/TV_content.mp4" />
+          </Suspense>
+        )}
+
+        {/* ── Digital Smart Clock Display below the TV (Date & Time) ─── */}
+        {mode === 'cinematic' && (
+          <Suspense fallback={null}>
+            <BelowTVClock />
+          </Suspense>
+        )}
+
+        {/* ── Brochure book placed on the coffee table ───────────────── */}
         <ClosedBook
           mode={mode}
           onClickBook={onClickBook}
@@ -189,26 +165,19 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
           backCoverImageUrl="/back_cover.png"
         />
 
-        {/* ── FIX 8: Realistic Electric / Energy Effects ────────────── */}
-        <ElectricalEffects
-          mode={mode}
-          deviceTier={deviceTier}
-          intensifyTrigger={intensifyTrigger}
-        />
-
-        {/* ── Contact shadows under the book ────────────────────────── */}
+        {/* ── Contact shadows under the book on the table surface ──────── */}
         {deviceTier !== 'mobile' && (
           <ContactShadows
-            position={[0, -1.48, 0]}
-            opacity={0.35}
-            scale={6}
-            blur={2.5}
-            far={3}
-            color="#000010"
+            position={[-0.3702, -0.920, -0.7452]}
+            opacity={0.45}
+            scale={0.8}
+            blur={1.5}
+            far={0.5}
+            color="#050510"
           />
         )}
 
-        {/* ── Page-turn effect (reading mode only) ──────────────────── */}
+        {/* ── Page-turn effect (reading mode only) ───────────────────── */}
         {mode === 'reading' && (
           <PageTurnEffects
             pageTurnTrigger={pageTurnTrigger}
@@ -216,7 +185,7 @@ const SceneCanvas: React.FC<SceneCanvasProps> = ({
           />
         )}
 
-        {/* ── Post-processing ───────────────────────────────────────── */}
+        {/* ── Post-processing ────────────────────────────────────────── */}
         <PostProcessingEffects deviceTier={deviceTier} />
       </Canvas>
     </div>

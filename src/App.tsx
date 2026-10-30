@@ -4,6 +4,7 @@ import FlipbookViewer from './components/Flipbook/FlipbookViewer';
 import FlipbookControls from './components/Flipbook/FlipbookControls';
 import FlipbookThumbnails from './components/Flipbook/FlipbookThumbnails';
 import SceneCanvas from './components/ThreeScene/SceneCanvas';
+import ThemeSwitcher from './components/ThemeSwitcher/ThemeSwitcher';
 import { useFlipbook } from './hooks/useFlipbook';
 
 type ViewMode = 'cinematic' | 'reading';
@@ -13,6 +14,24 @@ const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('cinematic');
   const [intensifyTrigger, setIntensifyTrigger] = useState(0);
   const [pageTurnTrigger, setPageTurnTrigger] = useState(0);
+
+  // Room Theme state (defaults to 'warm-nordic')
+  const [roomTheme, setRoomTheme] = useState<string>(() => {
+    try {
+      return localStorage.getItem('brochure_room_theme') || 'warm-nordic';
+    } catch {
+      return 'warm-nordic';
+    }
+  });
+
+  const handleSelectTheme = useCallback((themeId: string) => {
+    setRoomTheme(themeId);
+    try {
+      localStorage.setItem('brochure_room_theme', themeId);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const {
     status,
@@ -126,12 +145,29 @@ const App: React.FC = () => {
         onClickBook={handleClickBook}
         intensifyTrigger={intensifyTrigger}
         pageTurnTrigger={pageTurnTrigger}
+        themeId={roomTheme}
+      />
+
+      {/* Room Color Theme Switcher Option */}
+      <ThemeSwitcher
+        currentThemeId={roomTheme}
+        onSelectTheme={handleSelectTheme}
       />
 
       {/* Toast notification banner */}
       {toastMessage && (
         <div className="toast-notification" role="status" aria-live="polite">
           {toastMessage}
+        </div>
+      )}
+
+      {/* ── Cinematic Mode: Guidance prompt ───────────────────────── */}
+      {viewMode === 'cinematic' && (
+        <div className="cinematic-overlay">
+          <div className="cinematic-prompt">
+            <span className="cinematic-prompt-text">Click the brochure on the table to open</span>
+            <span className="cinematic-prompt-hint">Drag to orbit all angles • Right-click or 2-finger drag to pan • Scroll to zoom</span>
+          </div>
         </div>
       )}
 
@@ -142,13 +178,13 @@ const App: React.FC = () => {
           <button
             className="back-to-3d-btn"
             onClick={handleBackTo3D}
-            title="Explore Dev Room"
-            aria-label="Explore Dev Room"
+            title="Explore Environment"
+            aria-label="Explore Environment"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            <span>Explore Dev Room</span>
+            <span>Explore Environment</span>
           </button>
 
           {/* Thumbnails Drawer */}

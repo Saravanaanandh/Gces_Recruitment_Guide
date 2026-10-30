@@ -19,20 +19,30 @@ const ClosedBook: React.FC<ClosedBookProps> = ({
   frontCoverImageUrl = '/front_cover.png',
   backCoverImageUrl = '/back_cover.png',
 }) => {
-  const groupRef    = useRef<THREE.Group>(null!);
-  const meshRef     = useRef<THREE.Mesh>(null!);
+  const groupRef = useRef<THREE.Group>(null!);
+  const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHovered] = useState(false);
 
-  // Book dimensions
-  const bookW = 1.3;
-  const bookH = 1.8;
-  const bookD = 0.42;
+  // Exact coordinates of coffee table in test.glb
+  const TABLE_X = -0.3702;
+  const TABLE_Z = -0.7452;
+  const TABLE_TOP_Y = -0.9219;
 
-  // Y positions
-  const cinematicY = 0.55;
-  const readingY   = -1.5;
+  // Reduced, realistic brochure dimensions to comfortably fit on the coffee table (0.7x0.7m)
+  const bookW = 0.34;
+  const bookH = 0.46;
+  const bookD = 0.038;
 
-  const animState = useRef({ y: cinematicY, rotY: 0, scale: 1 });
+  // Resting height on table surface
+  const restY = TABLE_TOP_Y + bookD / 2; // -0.9029
+  const hoverY = restY + 0.025; // Subtle 2.5cm interactive elevation on hover
+  const readingY = -1.4;
+
+  const animState = useRef({
+    y: restY,
+    rotX: -Math.PI / 2 + 0.04,
+    scale: 1,
+  });
 
   // ── Cover textures ────────────────────────────────────────────────────────
   const [frontCoverTexture, setFrontCoverTexture] = useState<THREE.Texture | null>(null);
@@ -106,12 +116,12 @@ const ClosedBook: React.FC<ClosedBookProps> = ({
       spineMat,      // -X  spine (left side)
       pageEdgeMat,   // +Y  top edge
       pageEdgeMat,   // -Y  bottom edge
-      frontCoverMat, // +Z  front cover (faces camera on startup)
-      backCoverMat,  // -Z  back cover
+      frontCoverMat, // +Z  front cover (faces up toward camera when rotated)
+      backCoverMat,  // -Z  back cover (rests on table)
     ];
   }, [frontCoverTexture, backCoverTexture]);
 
-  // Apply material array to mesh imperatively (avoids R3F JSX multi-material issues)
+  // Apply material array to mesh imperatively
   useEffect(() => {
     if (meshRef.current) {
       meshRef.current.material = matArray;
@@ -122,30 +132,39 @@ const ClosedBook: React.FC<ClosedBookProps> = ({
   const boxGeo = useMemo(() => new THREE.BoxGeometry(bookW, bookH, bookD), []);
 
   // ── Animation loop ────────────────────────────────────────────────────────
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!groupRef.current) return;
-    const t  = clock.getElapsedTime();
     const st = animState.current;
 
     if (mode === 'cinematic') {
-      const floatY = cinematicY + Math.sin(t * 0.55) * 0.09;
-      st.y = THREE.MathUtils.lerp(st.y, floatY, 0.06);
-      st.rotY += 0.0042; // ~1 full rotation per 25s
-      st.scale = THREE.MathUtils.lerp(st.scale, 1.0, 0.05);
-    } else {
-      st.y     = THREE.MathUtils.lerp(st.y, readingY, 0.045);
-      st.scale = THREE.MathUtils.lerp(st.scale, 0.01, 0.03);
-    }
+      const targetY = hovered ? hoverY : restY;
+      const targetTilt = hovered ? -Math.PI / 2 + 0.14 : -Math.PI / 2 + 0.04;
+      const targetScale = hovered ? 1.03 : 1.0;
 
-    groupRef.current.position.y = st.y;
-    groupRef.current.rotation.y = st.rotY;
-    groupRef.current.scale.setScalar(Math.max(st.scale, 0.001));
-    groupRef.current.visible = st.scale > 0.01;
+      // Smooth interactive damping
+      st.y = THREE.MathUtils.damp(st.y, targetY, 6, delta);
+      st.rotX = THREE.MathUtils.damp(st.rotX, targetTilt, 6, delta);
+      st.scale = THREE.MathUtils.damp(st.scale, targetScale, 6, delta);
+
+      groupRef.current.position.set(TABLE_X, st.y, TABLE_Z);
+      groupRef.current.rotation.set(st.rotX, 0, -0.05);
+      groupRef.current.scale.setScalar(st.scale);
+      groupRef.current.visible = true;
+    } else {
+      st.y = THREE.MathUtils.damp(st.y, readingY, 5, delta);
+      st.scale = THREE.MathUtils.damp(st.scale, 0.01, 5, delta);
+
+      groupRef.current.position.set(TABLE_X, st.y, TABLE_Z);
+      groupRef.current.scale.setScalar(Math.max(st.scale, 0.001));
+      groupRef.current.visible = st.scale > 0.02;
+    }
   });
 
   return (
     <group
       ref={groupRef}
+      position={[TABLE_X, restY, TABLE_Z]}
+      rotation={[-Math.PI / 2 + 0.04, 0, -0.05]}
       onClick={(e) => {
         if (mode === 'cinematic') {
           e.stopPropagation();
@@ -156,24 +175,16 @@ const ClosedBook: React.FC<ClosedBookProps> = ({
       onPointerOut={() => setHovered(false)}
     >
       {/* ── Book mesh: single BoxGeometry, material array set imperatively ─ */}
-      <mesh ref={meshRef} geometry={boxGeo} castShadow>
-        {/* Dummy placeholder material — overridden by useEffect above */}
+      <mesh ref={meshRef} geometry={boxGeo} castShadow receiveShadow>
         <meshStandardMaterial />
       </mesh>
 
-      {/* ── Subtle book glow point lights ─────────────────────────────── */}
+      {/* ── Soft warm illumination directly focused on the brochure on the table ── */}
       <pointLight
-        position={[0, 0, bookD + 0.4]}
-        color="#00e5ff"
-        intensity={0.4}
-        distance={2.8}
-        decay={2}
-      />
-      <pointLight
-        position={[0, 0, -(bookD + 0.4)]}
-        color="#00aaff"
-        intensity={0.3}
-        distance={2.2}
+        position={[0, 0, bookD + 0.35]}
+        color={hovered ? '#93c5fd' : '#fff4e0'}
+        intensity={hovered ? 0.7 : 0.4}
+        distance={1.6}
         decay={2}
       />
     </group>

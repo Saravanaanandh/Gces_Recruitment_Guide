@@ -9,15 +9,15 @@ const PostProcessingEffects: React.FC<PostProcessingEffectsProps> = ({ deviceTie
   // Skip all post-processing on mobile for performance
   if (deviceTier === 'mobile') return null;
 
-  const bloomIntensity = deviceTier === 'desktop' ? 0.85 : 0.5;
+  const bloomIntensity = deviceTier === 'desktop' ? 0.35 : 0.2;
 
   return (
     <EffectComposer>
-      {/* Bloom — lower threshold so cyan rings / arc lines glow */}
+      {/* Subtle bloom for realistic material sheen without blowout */}
       <Bloom
         intensity={bloomIntensity}
-        luminanceThreshold={0.52}
-        luminanceSmoothing={0.4}
+        luminanceThreshold={0.85}
+        luminanceSmoothing={0.3}
         mipmapBlur
       />
       {/* Vignette to focus attention on the platform/book center */}

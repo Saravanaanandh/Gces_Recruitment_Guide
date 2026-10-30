@@ -19,6 +19,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    cors: true,
     watch: {
       ignored: [
         '**/*.mp4',
@@ -26,6 +27,7 @@ export default defineConfig({
         '**/*.pdf',
         '**/*.avi',
         '**/*.mov',
+        '**/*.glb',
         '**/node_modules/**',
       ],
     },

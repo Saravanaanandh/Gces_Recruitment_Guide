@@ -1,0 +1,315 @@
+export interface StudentData {
+  name: string;
+  links: Record<string, string>;
+  githubContributions: number;
+  githubContributionsByYear?: Record<string, number>;
+  leetcodeSolved: number;
+  leetcodeSubmissions: number;
+}
+
+export interface StudentStatsPayload {
+  generatedAt: string;
+  students: Record<string, StudentData>;
+}
+
+export const STUDENT_STATS_DATA: StudentStatsPayload = {
+  "generatedAt": "2026-10-30T08:10:55.341Z",
+  "students": {
+    "barath-b": {
+      "name": "Barath B",
+      "links": {
+        "portfolio": "https://3dbarath.github.io",
+        "github": "https://github.com/3DBarath",
+        "leetcode": "https://leetcode.com/u/LpkxOUY2H3/",
+        "linkedin": "https://www.linkedin.com/in/3dbarath/"
+      },
+      "githubContributions": 3685,
+      "githubContributionsByYear": {
+        "2021": 2,
+        "2022": 5,
+        "2023": 48,
+        "2024": 1,
+        "2025": 145,
+        "2026": 3484
+      },
+      "leetcodeSolved": 23,
+      "leetcodeSubmissions": 31
+    },
+    "dhavaputhalvi-r": {
+      "name": "Dhavaputhalvi R",
+      "links": {
+        "portfolio": "https://portfolio-final-60064325153.development.catalystserverless.in/app/index.html",
+        "github": "https://github.com/Dhavaputhalvi",
+        "linkedin": "https://www.linkedin.com/in/dhavaputhalvi-r-2478512a6",
+        "hackerrank": "https://www.hackerrank.com/profile/dhavaputhalvira1"
+      },
+      "githubContributions": 134,
+      "githubContributionsByYear": {
+        "2025": 36,
+        "2026": 98
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "dhanusha-baskaran": {
+      "name": "Dhanusha Baskaran",
+      "links": {
+        "portfolio": "https://dhanusha1909.github.io/Portfolio/",
+        "github": "https://github.com/Dhanusha1909/",
+        "leetcode": "https://leetcode.com/u/Dhanusha_Baskaran",
+        "linkedin": "https://www.linkedin.com/in/dhanusha-baskaran-6bb877297/"
+      },
+      "githubContributions": 169,
+      "githubContributionsByYear": {
+        "2025": 41,
+        "2026": 128
+      },
+      "leetcodeSolved": 63,
+      "leetcodeSubmissions": 65
+    },
+    "harshavarthini-p": {
+      "name": "Harshavarthini P",
+      "links": {
+        "portfolio": "https://harshavarthini-p-portfolio.lovable.app/",
+        "github": "https://github.com/harshapalanivel5",
+        "leetcode": "https://leetcode.com/u/6TSGJIOdPa/",
+        "linkedin": "https://www.linkedin.com/in/harshavarthini-palanivel-a729662a5"
+      },
+      "githubContributions": 76,
+      "githubContributionsByYear": {
+        "2025": 7,
+        "2026": 69
+      },
+      "leetcodeSolved": 49,
+      "leetcodeSubmissions": 50
+    },
+    "nisha-s": {
+      "name": "Nisha S",
+      "links": {
+        "github": "https://github.com/Nisha3322",
+        "linkedin": "https://www.linkedin.com/in/nisha-s-7b6b3b199"
+      },
+      "githubContributions": 15,
+      "githubContributionsByYear": {
+        "2023": 1,
+        "2024": 0,
+        "2025": 0,
+        "2026": 14
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "lavanya-s-v": {
+      "name": "Lavanya S V",
+      "links": {
+        "github": "https://github.com/Lavanya2005-SV",
+        "linkedin": "https://www.linkedin.com/in/lavanya-s-v-30296a2a5"
+      },
+      "githubContributions": 28,
+      "githubContributionsByYear": {
+        "2025": 4,
+        "2026": 24
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "avandika-b-n": {
+      "name": "Avandika B N",
+      "links": {
+        "portfolio": "https://avandika-dev.vercel.app/",
+        "github": "https://github.com/Avandika-07",
+        "linkedin": "https://www.linkedin.com/in/avandika-b-n-9b2151299"
+      },
+      "githubContributions": 56,
+      "githubContributionsByYear": {
+        "2025": 16,
+        "2026": 40
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "k-sangameshwari": {
+      "name": "Sangameshwari K",
+      "links": {
+        "portfolio": "https://sangameshwarik-protfolio.vercel.app/",
+        "github": "https://github.com/sangameshwarik",
+        "linkedin": "https://www.linkedin.com/in/sangameshwari-k-36aa4435a/"
+      },
+      "githubContributions": 17,
+      "githubContributionsByYear": {
+        "2026": 17
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "suganya-m": {
+      "name": "Suganya M",
+      "links": {
+        "github": "https://github.com/suganya2307/Suganya-M",
+        "linkedin": "https://www.linkedin.com/in/suganya-m-b76059325"
+      },
+      "githubContributions": 18,
+      "githubContributionsByYear": {
+        "2026": 18
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "saravanakumar-m": {
+      "name": "Saravanakumar M",
+      "links": {
+        "portfolio": "https://saravanawebdev.web.app",
+        "github": "https://github.com/Saravanaanandh",
+        "leetcode": "https://leetcode.com/u/SaravanaWebDev/",
+        "linkedin": "https://www.linkedin.com/in/saravanawebdev"
+      },
+      "githubContributions": 353,
+      "githubContributionsByYear": {
+        "2023": 1,
+        "2024": 15,
+        "2025": 184,
+        "2026": 153
+      },
+      "leetcodeSolved": 174,
+      "leetcodeSubmissions": 180
+    },
+    "rifath-shifa-m": {
+      "name": "Rifath Shifa M",
+      "links": {
+        "portfolio": "https://shifagirl-portfolio.vercel.app",
+        "github": "https://github.com/rifathshifa",
+        "leetcode": "https://leetcode.com/u/LN9MepmyDn/",
+        "linkedin": "https://www.linkedin.com/in/rifathshifa/"
+      },
+      "githubContributions": 70,
+      "githubContributionsByYear": {
+        "2025": 3,
+        "2026": 67
+      },
+      "leetcodeSolved": 2,
+      "leetcodeSubmissions": 2
+    },
+    "nanthana-s": {
+      "name": "Nanthana S",
+      "links": {
+        "portfolio": "https://nanthana2311.github.io/",
+        "github": "https://github.com/Nanthana2311",
+        "linkedin": "https://www.linkedin.com/in/nanthana-sengather-122a1b2a5"
+      },
+      "githubContributions": 92,
+      "githubContributionsByYear": {
+        "2025": 3,
+        "2026": 89
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "dalwin": {
+      "name": "Dalwin",
+      "links": {
+        "portfolio": "https://dalwin-protfolio.onrender.com/",
+        "github": "https://github.com/DALWINRAJU"
+      },
+      "githubContributions": 30,
+      "githubContributionsByYear": {
+        "2025": 1,
+        "2026": 29
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "dhineshkumar-j": {
+      "name": "Dhineshkumar J",
+      "links": {
+        "portfolio": "https://portfollio-sigma-six.vercel.app",
+        "github": "https://github.com/dhineshdeveloper001-sketch",
+        "linkedin": "https://www.linkedin.com/in/dhineshkumar-j-5a473a419",
+        "leetcode": "https://leetcode.com/u/dhineshkumar_0001/"
+      },
+      "githubContributions": 191,
+      "githubContributionsByYear": {
+        "2026": 191
+      },
+      "leetcodeSolved": 23,
+      "leetcodeSubmissions": 23
+    },
+    "jeffrey-anto-thomas-s": {
+      "name": "Jeffrey Anto Thomas S",
+      "links": {
+        "github": "https://github.com/Jeffrey-Anto",
+        "linkedin": "https://www.linkedin.com/in/jeffreyantothomas",
+        "leetcode": "https://leetcode.com/u/Jeffrey_Anto/"
+      },
+      "githubContributions": 69,
+      "githubContributionsByYear": {
+        "2025": 44,
+        "2026": 25
+      },
+      "leetcodeSolved": 77,
+      "leetcodeSubmissions": 81
+    },
+    "mukesh-s": {
+      "name": "Mukesh S",
+      "links": {
+        "portfolio": "https://mukesh-portfolio-60043185046.development.catalystserverless.in/app/index.html",
+        "github": "https://github.com/mukesh-offll-dev",
+        "linkedin": "https://www.linkedin.com/in/mukesh-s-53188a2a4/"
+      },
+      "githubContributions": 284,
+      "githubContributionsByYear": {
+        "2025": 63,
+        "2026": 221
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "bhavya-j": {
+      "name": "Bhavya J",
+      "links": {
+        "portfolio": "https://folio-seven-zeta.vercel.app/",
+        "github": "https://github.com/Bhavya-jayaraman",
+        "linkedin": "https://www.linkedin.com/in/bhavyajayaraman/"
+      },
+      "githubContributions": 54,
+      "githubContributionsByYear": {
+        "2025": 1,
+        "2026": 53
+      },
+      "leetcodeSolved": 0,
+      "leetcodeSubmissions": 0
+    },
+    "sathish-d": {
+      "name": "Sathish D",
+      "links": {
+        "portfolio": "https://sathish-devos.web.app",
+        "github": "https://github.com/sathish437",
+        "linkedin": "https://www.linkedin.com/in/sathish-dev4",
+        "leetcode": "https://leetcode.com/u/Sathish__/"
+      },
+      "githubContributions": 274,
+      "githubContributionsByYear": {
+        "2025": 1,
+        "2026": 273
+      },
+      "leetcodeSolved": 36,
+      "leetcodeSubmissions": 37
+    },
+    "benjamin-bruce-m": {
+      "name": "BENJAMIN BRUCE M",
+      "links": {
+        "portfolio": "https://portfolio-pwu3.vercel.app",
+        "github": "https://github.com/Benjamin23-B",
+        "linkedin": "https://www.linkedin.com/in/benjamin-bruce-2888882a4",
+        "leetcode": "https://leetcode.com/u/4ZvqvsSpDs/"
+      },
+      "githubContributions": 26,
+      "githubContributionsByYear": {
+        "2025": 1,
+        "2026": 25
+      },
+      "leetcodeSolved": 14,
+      "leetcodeSubmissions": 15
+    }
+  }
+}
+;
